@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class BudgetCaculatorTest
-{
+public class BudgetCaculatorTest {
 
     private BudgetCaculator budgetCaculator;
 
@@ -25,13 +24,15 @@ public class BudgetCaculatorTest
                 Budget budget = new Budget();
                 budget.yearMonth = "201801";
                 budget.budgetAmount = 310;
-                return null;
+                List<Budget> budgetList = new ArrayList<>();
+                budgetList.add(budget);
+                return budgetList;
             }
         };
 
         budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day =  LocalDate.of(2018, 1, 1);
-        LocalDate end_day =  LocalDate.of(2018, 1, 1);
+        LocalDate start_day = LocalDate.of(2018, 1, 1);
+        LocalDate end_day = LocalDate.of(2018, 1, 1);
         totalAmountShouldBe(start_day, end_day, 10.00);
     }
 
@@ -40,8 +41,8 @@ public class BudgetCaculatorTest
 
         IBudgetRepo budgetRepo = givenBudgetRepo();
         budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day =  LocalDate.of(2018, 1, 1);
-        LocalDate end_day =  LocalDate.of(2018, 1, 2);
+        LocalDate start_day = LocalDate.of(2018, 1, 1);
+        LocalDate end_day = LocalDate.of(2018, 1, 2);
         totalAmountShouldBe(start_day, end_day, 20.00);
     }
 
@@ -51,8 +52,8 @@ public class BudgetCaculatorTest
         IBudgetRepo budgetRepo = givenBudgetRepo();
 
         budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day =  LocalDate.of(2018, 1, 1);
-        LocalDate end_day =  LocalDate.of(2018, 1, 31);
+        LocalDate start_day = LocalDate.of(2018, 1, 1);
+        LocalDate end_day = LocalDate.of(2018, 1, 31);
         totalAmountShouldBe(start_day, end_day, 310.00);
     }
 
@@ -62,8 +63,8 @@ public class BudgetCaculatorTest
         IBudgetRepo budgetRepo = givenBudgetRepo();
 
         budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day =  LocalDate.of(2018, 1, 31);
-        LocalDate end_day =  LocalDate.of(2018, 2, 1);
+        LocalDate start_day = LocalDate.of(2018, 1, 31);
+        LocalDate end_day = LocalDate.of(2018, 2, 1);
         totalAmountShouldBe(start_day, end_day, 10.00);
     }
 
@@ -73,8 +74,8 @@ public class BudgetCaculatorTest
         IBudgetRepo budgetRepo = givenBudgetRepo();
 
         budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day =  LocalDate.of(2018, 3, 31);
-        LocalDate end_day =  LocalDate.of(2018, 4, 1);
+        LocalDate start_day = LocalDate.of(2018, 3, 31);
+        LocalDate end_day = LocalDate.of(2018, 4, 1);
         totalAmountShouldBe(start_day, end_day, 220.00);
     }
 
@@ -85,9 +86,32 @@ public class BudgetCaculatorTest
         IBudgetRepo budgetRepo = givenBudgetRepo();
 
         budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day =  LocalDate.of(2018, 2, 2);
-        LocalDate end_day =  LocalDate.of(2018, 2, 5);
+        LocalDate start_day = LocalDate.of(2018, 2, 2);
+        LocalDate end_day = LocalDate.of(2018, 2, 5);
         totalAmountShouldBe(start_day, end_day, 0);
+    }
+
+    @Test
+    public void multiple_months() {
+
+        IBudgetRepo budgetRepo = givenBudgetRepo();
+
+        budgetCaculator = new BudgetCaculator(budgetRepo);
+        LocalDate start_day = LocalDate.of(2018, 3, 31);
+        LocalDate end_day = LocalDate.of(2018, 5, 1);
+        totalAmountShouldBe(start_day, end_day, 820.00);
+
+    }
+
+    @Test
+    public void multiple_months_with_some_month_no_budget() {
+
+        IBudgetRepo budgetRepo = givenBudgetRepo();
+
+        budgetCaculator = new BudgetCaculator(budgetRepo);
+        LocalDate start_day = LocalDate.of(2018, 2, 1);
+        LocalDate end_day = LocalDate.of(2018, 6, 1);
+        totalAmountShouldBe(start_day, end_day, 7420.00);
     }
 
     private void totalAmountShouldBe(LocalDate start_day, LocalDate end_day, double v) {
@@ -108,10 +132,14 @@ public class BudgetCaculatorTest
                 Budget budget3 = new Budget();
                 budget3.yearMonth = "201804";
                 budget3.budgetAmount = 600;
+                Budget budget4 = new Budget();
+                budget4.yearMonth = "201805";
+                budget4.budgetAmount = 620;
                 List<Budget> budgetList = new ArrayList<>();
                 budgetList.add(budget);
                 budgetList.add(budget2);
                 budgetList.add(budget3);
+                budgetList.add(budget4);
                 return budgetList;
             }
         };
