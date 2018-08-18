@@ -1,121 +1,71 @@
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class BudgetCaculatorTest {
 
     private BudgetCaculator budgetCaculator;
 
-    public BudgetCaculatorTest() throws ParseException {
+    @Before
+    public void setup() {
+        IBudgetRepo budgetRepo = givenBudgetRepo();
+        budgetCaculator = new BudgetCaculator(budgetRepo);
     }
 
     @Test
     public void same_day() {
 
-        IBudgetRepo budgetRepo = new IBudgetRepo() {
-            @Override
-            public List<Budget> getAll() {
-                Budget budget = new Budget();
-                budget.yearMonth = "201801";
-                budget.budgetAmount = 310;
-                List<Budget> budgetList = new ArrayList<>();
-                budgetList.add(budget);
-                return budgetList;
-            }
-        };
-
-        budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day = LocalDate.of(2018, 1, 1);
-        LocalDate end_day = LocalDate.of(2018, 1, 1);
-        totalAmountShouldBe(start_day, end_day, 10.00);
+        totalAmountShouldBe("20180101", "20180101", 10.00);
     }
 
     @Test
     public void range_two_days() {
 
-        IBudgetRepo budgetRepo = givenBudgetRepo();
-        budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day = LocalDate.of(2018, 1, 1);
-        LocalDate end_day = LocalDate.of(2018, 1, 2);
-        totalAmountShouldBe(start_day, end_day, 20.00);
+        totalAmountShouldBe("20180101", "20180102", 20.00);
     }
 
     @Test
     public void full_month() {
-
-        IBudgetRepo budgetRepo = givenBudgetRepo();
-
-        budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day = LocalDate.of(2018, 1, 1);
-        LocalDate end_day = LocalDate.of(2018, 1, 31);
-        totalAmountShouldBe(start_day, end_day, 310.00);
+        totalAmountShouldBe("20180101", "20180131", 310.00);
     }
 
     @Test
     public void cross_month() {
-
-        IBudgetRepo budgetRepo = givenBudgetRepo();
-
-        budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day = LocalDate.of(2018, 1, 31);
-        LocalDate end_day = LocalDate.of(2018, 2, 1);
-        totalAmountShouldBe(start_day, end_day, 10.00);
+        totalAmountShouldBe("20180131", "20180201", 10.00);
     }
 
     @Test
     public void two_different_months() {
-
-        IBudgetRepo budgetRepo = givenBudgetRepo();
-
-        budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day = LocalDate.of(2018, 3, 31);
-        LocalDate end_day = LocalDate.of(2018, 4, 1);
-        totalAmountShouldBe(start_day, end_day, 220.00);
+        totalAmountShouldBe("20180331", "20180401", 220.00);
     }
 
 
     @Test
     public void donotoverlap() {
 
-        IBudgetRepo budgetRepo = givenBudgetRepo();
-
-        budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day = LocalDate.of(2018, 2, 2);
-        LocalDate end_day = LocalDate.of(2018, 2, 5);
-        totalAmountShouldBe(start_day, end_day, 0);
+        totalAmountShouldBe("20180202", "20180205", 0);
     }
 
     @Test
     public void multiple_months() {
-
-        IBudgetRepo budgetRepo = givenBudgetRepo();
-
-        budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day = LocalDate.of(2018, 3, 31);
-        LocalDate end_day = LocalDate.of(2018, 5, 1);
-        totalAmountShouldBe(start_day, end_day, 820.00);
+        totalAmountShouldBe("20180331", "20180501", 820.00);
 
     }
 
     @Test
     public void multiple_months_with_some_month_no_budget() {
 
-        IBudgetRepo budgetRepo = givenBudgetRepo();
-
-        budgetCaculator = new BudgetCaculator(budgetRepo);
-        LocalDate start_day = LocalDate.of(2018, 2, 1);
-        LocalDate end_day = LocalDate.of(2018, 6, 1);
-        totalAmountShouldBe(start_day, end_day, 7420.00);
+        totalAmountShouldBe("20180201", "20180601", 7420.00);
     }
 
-    private void totalAmountShouldBe(LocalDate start_day, LocalDate end_day, double v) {
-        double budget = budgetCaculator.totalAmount(start_day, end_day);
+    private void totalAmountShouldBe(String start_day, String end_day, double v) {
+        LocalDate start = LocalDate.of(Integer.parseInt(start_day.substring(0, 4)), Integer.parseInt(start_day.substring(4, 6)), Integer.parseInt(start_day.substring(6)));
+        LocalDate end = LocalDate.of(Integer.parseInt(end_day.substring(0, 4)), Integer.parseInt(end_day.substring(4, 6)), Integer.parseInt(end_day.substring(6)));
+        double budget = budgetCaculator.totalAmount(start, end);
         Assert.assertEquals(v, budget, 0.001);
     }
 
