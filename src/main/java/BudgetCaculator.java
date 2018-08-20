@@ -39,50 +39,70 @@ public class BudgetCaculator {
 
         //Same month
         if (isSameMonth(period)) {
-            String startYM = (period.start.getYear()) + "0" + period.start.getMonthValue();
-            Double bugetStartMonthperDay = mLookUpTable.get(startYM);
-            int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
-            long diffDate = Duration.between(period.start.atStartOfDay(), period.end.atStartOfDay()).toDays() + 1;
-            if (bugetStartMonthperDay != null) {
-                totalAmount = diffDate * bugetStartMonthperDay;
-            }
+            totalAmount += amountOfSingleMonth(period);
 
         } else {
-            //Check Start day in DB
+            totalAmount += amountOfFirstMonth(period);
 
-            String startYM = (period.start.getYear()) + String.format("%02d", period.start.getMonthValue());
-            if (mLookUpTable.containsKey(startYM)) {
-                Double bugetStartMonthperDay = mLookUpTable.get(startYM);
-                int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
-                totalAmount = days * bugetStartMonthperDay;
-            }
+            totalAmount += amountOfMiddleMonth(period);
 
-            //中間的月份
-            LocalDate loopStartDate = LocalDate.of(period.start.getYear(), period.start.getMonth(), 1).plusMonths(1);
-            LocalDate loopEndartDate = LocalDate.of(period.end.getYear(), period.end.getMonth(), 1);
-            for (LocalDate date = loopStartDate; date.compareTo(loopEndartDate) < 0; date = date.plusMonths(1)) {
-                String middleYM = date.getYear() + String.format("%02d", date.getMonthValue());
-                if (mLookUpTable.containsKey(middleYM)) {
-                    Double bugetMiddleMonthperDay = mLookUpTable.get(middleYM);
-
-                    int middleDays = date.lengthOfMonth();
-                    totalAmount += middleDays * bugetMiddleMonthperDay;
-                }
-            }
-
-            String endYM = (period.end.getYear()) + String.format("%02d", period.end.getMonthValue());
-            if (mLookUpTable.containsKey(endYM)) {
-                Double bugetEndMonthofDay = mLookUpTable.get(endYM);
-                int endday = period.end.getDayOfMonth();
-                if (bugetEndMonthofDay != null) {
-                    totalAmount += endday * bugetEndMonthofDay;
-                }
-            }
-
+            totalAmount += amountOfLastMonth(period);
         }
 
         return totalAmount;
 
+    }
+
+    private double amountOfSingleMonth(Period period) {
+        double amountOfSingleMonth = 0;
+        String startYM = (period.start.getYear()) + "0" + period.start.getMonthValue();
+        Double bugetStartMonthperDay = mLookUpTable.get(startYM);
+        int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
+        long diffDate = Duration.between(period.start.atStartOfDay(), period.end.atStartOfDay()).toDays() + 1;
+        if (bugetStartMonthperDay != null) {
+            amountOfSingleMonth = diffDate * bugetStartMonthperDay;
+        }
+        return amountOfSingleMonth;
+    }
+
+    private double amountOfLastMonth(Period period) {
+        double amountOfLastMonth = 0;
+        String endYM = (period.end.getYear()) + String.format("%02d", period.end.getMonthValue());
+        if (mLookUpTable.containsKey(endYM)) {
+            Double bugetEndMonthofDay = mLookUpTable.get(endYM);
+            int endday = period.end.getDayOfMonth();
+            if (bugetEndMonthofDay != null) {
+                amountOfLastMonth += endday * bugetEndMonthofDay;
+            }
+        }
+        return amountOfLastMonth;
+    }
+
+    private double amountOfMiddleMonth(Period period) {
+        double amountOfMiddleMonth = 0;
+        LocalDate loopStartDate = LocalDate.of(period.start.getYear(), period.start.getMonth(), 1).plusMonths(1);
+        LocalDate loopEndartDate = LocalDate.of(period.end.getYear(), period.end.getMonth(), 1);
+        for (LocalDate date = loopStartDate; date.compareTo(loopEndartDate) < 0; date = date.plusMonths(1)) {
+            String middleYM = date.getYear() + String.format("%02d", date.getMonthValue());
+            if (mLookUpTable.containsKey(middleYM)) {
+                Double bugetMiddleMonthperDay = mLookUpTable.get(middleYM);
+
+                int middleDays = date.lengthOfMonth();
+                amountOfMiddleMonth += middleDays * bugetMiddleMonthperDay;
+            }
+        }
+        return amountOfMiddleMonth;
+    }
+
+    private double amountOfFirstMonth(Period period) {
+        double amountOfFirstMonth = 0;
+        String startYM = (period.start.getYear()) + String.format("%02d", period.start.getMonthValue());
+        if (mLookUpTable.containsKey(startYM)) {
+            Double bugetStartMonthperDay = mLookUpTable.get(startYM);
+            int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
+            amountOfFirstMonth = days * bugetStartMonthperDay;
+        }
+        return amountOfFirstMonth;
     }
 
     private boolean isSameMonth(Period period) {
