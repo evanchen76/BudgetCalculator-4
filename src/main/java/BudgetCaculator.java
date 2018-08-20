@@ -2,16 +2,10 @@
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Util.println;
-
 
 public class BudgetCaculator {
     private IBudgetRepo budgetRepo;
-    private Map<String, Double> mLookUpTable;
     private double totalAmount;
 
     public BudgetCaculator(IBudgetRepo budgetRepo) {
@@ -26,16 +20,6 @@ public class BudgetCaculator {
         Period period = new Period(start, end);
         period.start = start;
         period.end = end;
-
-        mLookUpTable = new HashMap<String, Double>();
-
-        if (budgetList.size() > 0) {
-            for (Budget budget : budgetList) {
-                LocalDate localFirstDay = createMonthPerDay(budget);
-                double bugetperday = calculateBudgetPerMonth(budget, localFirstDay);
-                mLookUpTable.put(budget.yearMonth, bugetperday);
-            }
-        }
 
         //Same month
         if (isSameMonth(period)) {
@@ -104,14 +88,16 @@ public class BudgetCaculator {
     }
 
     private Double getDailyAmount(String month) {
-        if (mLookUpTable.containsKey(month)) {
-            return mLookUpTable.get(month);
+        Budget budget = budgetRepo.getAll().stream().filter(it -> it.yearMonth.equals(month)).findFirst().orElse(null);
+        if (budget != null) {
+            LocalDate budgetDate = createMonthPerDay(budget);
+            return calculateBudgetPerMonth(budget, budgetDate);
         }
         return 0.0;
     }
 
     private boolean hasBudget(String month) {
-        return mLookUpTable.containsKey(month);
+        return budgetRepo.getAll().stream().anyMatch(it -> it.yearMonth.equals(month));
     }
 
     private boolean isSameMonth(Period period) {
