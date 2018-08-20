@@ -12,16 +12,20 @@ import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Util.println
 public class BudgetCaculator {
     private IBudgetRepo budgetRepo;
     private Map<String, Double> mLookUpTable;
-    private double totalResult;
+    private double totalAmount;
 
     public BudgetCaculator(IBudgetRepo budgetRepo) {
 
         this.budgetRepo = budgetRepo;
     }
 
-    public double totalAmount(LocalDate start_day, LocalDate end_day) {
+    public double totalAmount(LocalDate start, LocalDate end) {
 
         List<Budget> budgetList = budgetRepo.getAll();
+
+        Period period = new Period(start, end);
+        period.start = start;
+        period.end = end;
 
         mLookUpTable = new HashMap<String, Double>();
 
@@ -34,55 +38,55 @@ public class BudgetCaculator {
         }
 
         //Same month
-        if (isSameMonth(start_day, end_day)) {
-            String startYM = (start_day.getYear()) + "0" + start_day.getMonthValue();
+        if (isSameMonth(period)) {
+            String startYM = (period.start.getYear()) + "0" + period.start.getMonthValue();
             Double bugetStartMonthperDay = mLookUpTable.get(startYM);
-            int days = start_day.lengthOfMonth() - start_day.getDayOfMonth() + 1;
-            long diffDate = Duration.between(start_day.atStartOfDay(), end_day.atStartOfDay()).toDays() + 1;
+            int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
+            long diffDate = Duration.between(period.start.atStartOfDay(), period.end.atStartOfDay()).toDays() + 1;
             if (bugetStartMonthperDay != null) {
-                totalResult = diffDate * bugetStartMonthperDay;
+                totalAmount = diffDate * bugetStartMonthperDay;
             }
 
         } else {
             //Check Start day in DB
 
-            String startYM = (start_day.getYear()) + String.format("%02d", start_day.getMonthValue());
+            String startYM = (period.start.getYear()) + String.format("%02d", period.start.getMonthValue());
             if (mLookUpTable.containsKey(startYM)) {
                 Double bugetStartMonthperDay = mLookUpTable.get(startYM);
-                int days = start_day.lengthOfMonth() - start_day.getDayOfMonth() + 1;
-                totalResult = days * bugetStartMonthperDay;
+                int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
+                totalAmount = days * bugetStartMonthperDay;
             }
 
             //中間的月份
-            LocalDate loopStartDate = LocalDate.of(start_day.getYear(), start_day.getMonth(), 1).plusMonths(1);
-            LocalDate loopEndartDate = LocalDate.of(end_day.getYear(), end_day.getMonth(), 1);
+            LocalDate loopStartDate = LocalDate.of(period.start.getYear(), period.start.getMonth(), 1).plusMonths(1);
+            LocalDate loopEndartDate = LocalDate.of(period.end.getYear(), period.end.getMonth(), 1);
             for (LocalDate date = loopStartDate; date.compareTo(loopEndartDate) < 0; date = date.plusMonths(1)) {
                 String middleYM = date.getYear() + String.format("%02d", date.getMonthValue());
                 if (mLookUpTable.containsKey(middleYM)) {
                     Double bugetMiddleMonthperDay = mLookUpTable.get(middleYM);
 
                     int middleDays = date.lengthOfMonth();
-                    totalResult += middleDays * bugetMiddleMonthperDay;
+                    totalAmount += middleDays * bugetMiddleMonthperDay;
                 }
             }
 
-            String endYM = (end_day.getYear()) + String.format("%02d", end_day.getMonthValue());
+            String endYM = (period.end.getYear()) + String.format("%02d", period.end.getMonthValue());
             if (mLookUpTable.containsKey(endYM)) {
                 Double bugetEndMonthofDay = mLookUpTable.get(endYM);
-                int endday = end_day.getDayOfMonth();
+                int endday = period.end.getDayOfMonth();
                 if (bugetEndMonthofDay != null) {
-                    totalResult += endday * bugetEndMonthofDay;
+                    totalAmount += endday * bugetEndMonthofDay;
                 }
             }
 
         }
 
-        return totalResult;
+        return totalAmount;
 
     }
 
-    private boolean isSameMonth(LocalDate start_day, LocalDate end_day) {
-        return start_day.getMonthValue() == end_day.getMonthValue();
+    private boolean isSameMonth(Period period) {
+        return period.start.getMonthValue() == period.end.getMonthValue();
     }
 
     private LocalDate createMonthPerDay(Budget budget) {
@@ -99,4 +103,14 @@ public class BudgetCaculator {
         return start_day.compareTo(end_day) != 0;
     }
 
+    private class Period {
+        LocalDate start;
+        LocalDate end;
+
+        private Period(LocalDate start, LocalDate end) {
+            this.start = start;
+            this.end = end;
+        }
+
+    }
 }
