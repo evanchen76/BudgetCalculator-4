@@ -4,6 +4,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Util.println;
+
+
 public class BudgetCaculator {
     private IBudgetRepo budgetRepo;
     private double totalAmount;
@@ -26,11 +29,36 @@ public class BudgetCaculator {
             totalAmount += amountOfSingleMonth(period);
 
         } else {
-            totalAmount += amountOfFirstMonth(period);
 
-            totalAmount += amountOfMiddleMonth(period);
+            LocalDate loopStartDate = LocalDate.of(period.start.getYear(), period.start.getMonth(), 1);
+            LocalDate loopEndDate = LocalDate.of(period.end.getYear(), period.end.getMonth(), 1);
 
-            totalAmount += amountOfLastMonth(period);
+            double amountOfMiddleMonth = 0;
+            for (LocalDate date = loopStartDate; date.compareTo(loopEndDate) <= 0; date = date.plusMonths(1)) {
+                String month = date.getYear() + String.format("%02d", date.getMonthValue());
+                Budget budget = getBudget(month);
+
+                LocalDate effectiveStart = period.start;
+                LocalDate effectiveEnd = period.end;
+                if (budget != null) {
+
+                    if (date.compareTo(loopStartDate) == 0) {
+                        effectiveStart = period.start;
+                        effectiveEnd = budget.lastDate();
+                    } else if (date.compareTo(loopEndDate) == 0) {
+                        effectiveStart = budget.firstDate();
+                        effectiveEnd = period.end;
+                    } else {
+                        effectiveStart = budget.firstDate();
+                        effectiveEnd = budget.lastDate();
+                    }
+
+                    long effectiveDays = days(effectiveStart, effectiveEnd);
+                    amountOfMiddleMonth += effectiveDays * budget.getDailyAmount();
+                }
+            }
+            totalAmount += amountOfMiddleMonth;
+
         }
 
         return totalAmount;
