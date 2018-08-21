@@ -40,11 +40,15 @@ public class BudgetCaculator {
     private double amountOfSingleMonth(Period period) {
         double amountOfSingleMonth = 0;
         String startYM = (period.start.getYear()) + "0" + period.start.getMonthValue();
-        Double bugetStartMonthperDay = getDailyAmount(startYM);
-        int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
-        long diffDate = Duration.between(period.start.atStartOfDay(), period.end.atStartOfDay()).toDays() + 1;
-        if (bugetStartMonthperDay != null) {
-            amountOfSingleMonth = diffDate * bugetStartMonthperDay;
+        Budget budget = getBudget(startYM);
+        if (budget != null) {
+            Double bugetStartMonthperDay = budget.getDailyAmount();
+            int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
+            long diffDate = days(period.start, period.end);
+            if (bugetStartMonthperDay != null) {
+                amountOfSingleMonth = diffDate * bugetStartMonthperDay;
+            }
+
         }
         return amountOfSingleMonth;
     }
@@ -52,12 +56,19 @@ public class BudgetCaculator {
     private double amountOfLastMonth(Period period) {
         double amountOfLastMonth = 0;
         String month = (period.end.getYear()) + String.format("%02d", period.end.getMonthValue());
-        if (hasBudget(month)) {
-            Double dailyAmount = getDailyAmount(month);
-            int days = period.end.getDayOfMonth();
-            amountOfLastMonth += days * dailyAmount;
+        Budget budget = getBudget(month);
+
+        if (budget != null) {
+            LocalDate effectiveStart = budget.firstDate();
+            LocalDate effectiveEnd = period.end;
+            long effectiveDays = days(effectiveStart, effectiveEnd);
+            amountOfLastMonth += effectiveDays * budget.getDailyAmount();
         }
         return amountOfLastMonth;
+    }
+
+    private long days(LocalDate effectiveStart, LocalDate effectiveEnd) {
+        return Duration.between(effectiveStart.atStartOfDay(), effectiveEnd.atStartOfDay()).toDays() + 1;
     }
 
     private double amountOfMiddleMonth(Period period) {
@@ -66,11 +77,14 @@ public class BudgetCaculator {
         LocalDate loopEndartDate = LocalDate.of(period.end.getYear(), period.end.getMonth(), 1);
         for (LocalDate date = loopStartDate; date.compareTo(loopEndartDate) < 0; date = date.plusMonths(1)) {
             String month = date.getYear() + String.format("%02d", date.getMonthValue());
-            if (hasBudget(month)) {
-                Double dailyAmount = getDailyAmount(month);
+            Budget budget = getBudget(month);
 
-                int days = date.lengthOfMonth();
-                amountOfMiddleMonth += days * dailyAmount;
+            if (budget != null) {
+                LocalDate effectiveStart = budget.firstDate();
+                LocalDate effectiveEnd = budget.lastDate();
+
+                long effectiveDays = days(effectiveStart, effectiveEnd);
+                amountOfMiddleMonth += effectiveDays * budget.getDailyAmount();
             }
         }
         return amountOfMiddleMonth;
@@ -79,25 +93,23 @@ public class BudgetCaculator {
     private double amountOfFirstMonth(Period period) {
         double amountOfFirstMonth = 0;
         String startYM = (period.start.getYear()) + String.format("%02d", period.start.getMonthValue());
-        if (hasBudget(startYM)) {
-            Double dailyAmount = getDailyAmount(startYM);
-            int days = period.start.lengthOfMonth() - period.start.getDayOfMonth() + 1;
-            amountOfFirstMonth = days * dailyAmount;
+        Budget budget = getBudget(startYM);
+
+        if (budget != null) {
+            LocalDate effectiveStart = period.start;
+            LocalDate effectiveEnd = budget.lastDate();
+            long effectiveDays = days(effectiveStart, effectiveEnd);
+            amountOfFirstMonth = effectiveDays * budget.getDailyAmount();
         }
         return amountOfFirstMonth;
     }
 
-    private Double getDailyAmount(String month) {
-        Budget budget = budgetRepo.getAll().stream().filter(it -> it.yearMonth.equals(month)).findFirst().orElse(null);
-        if (budget != null) {
-            LocalDate budgetDate = createMonthPerDay(budget);
-            return calculateBudgetPerMonth(budget, budgetDate);
-        }
-        return 0.0;
-    }
-
     private boolean hasBudget(String month) {
         return budgetRepo.getAll().stream().anyMatch(it -> it.yearMonth.equals(month));
+    }
+
+    private Budget getBudget(String month) {
+        return budgetRepo.getAll().stream().filter(it -> it.yearMonth.equals(month)).findFirst().orElse(null);
     }
 
     private boolean isSameMonth(Period period) {
