@@ -19,4 +19,8 @@ public class Budget {
     LocalDate lastDate() {
         return LocalDate.of(Integer.parseInt(yearMonth.substring(0, 4)), Integer.parseInt(yearMonth.substring(4)), firstDate().lengthOfMonth());
     }
+
+    Period createPeriod() {
+        return new Period(firstDate(), lastDate());
+    }
 }
