@@ -11,6 +11,9 @@ class Period {
     }
 
     long overlappingDays(Period otherPeriod) {
+        if (isNoOverlappingday(otherPeriod)) {
+            return 0;
+        }
         LocalDate effectiveStart = start;
         if (otherPeriod.start.compareTo(start) > 0) {
             effectiveStart = otherPeriod.start;
@@ -21,5 +24,9 @@ class Period {
         }
 
         return Duration.between(effectiveStart.atStartOfDay(), effectiveEnd.atStartOfDay()).toDays() + 1;
+    }
+
+    private boolean isNoOverlappingday(Period otherPeriod) {
+        return otherPeriod.start.compareTo(end) > 0 || otherPeriod.end.compareTo(start) < 0;
     }
 }
