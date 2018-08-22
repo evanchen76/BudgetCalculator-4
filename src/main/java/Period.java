@@ -10,14 +10,14 @@ class Period {
         this.end = end;
     }
 
-    long getEffectiveDays( Budget budget) {
+    long overlappingDays(Period otherPeriod) {
         LocalDate effectiveStart = start;
-        if (budget.firstDate().compareTo(this.start) > 0) {
-            effectiveStart = budget.firstDate();
+        if (otherPeriod.start.compareTo(start) > 0) {
+            effectiveStart = otherPeriod.start;
         }
         LocalDate effectiveEnd = end;
-        if (budget.lastDate().compareTo(this.end) < 0) {
-            effectiveEnd = budget.lastDate();
+        if (otherPeriod.end.compareTo(end) < 0) {
+            effectiveEnd = otherPeriod.end;
         }
 
         return Duration.between(effectiveStart.atStartOfDay(), effectiveEnd.atStartOfDay()).toDays() + 1;

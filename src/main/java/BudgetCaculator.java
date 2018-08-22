@@ -34,7 +34,9 @@ public class BudgetCaculator {
                 Budget budget = getBudget(month);
 
                 if (budget != null) {
-                    long effectiveDays = period.getEffectiveDays(budget);
+                    Period otherPeriod = new Period(budget.firstDate(), budget.lastDate());
+                    long effectiveDays = period.overlappingDays(otherPeriod);
+
                     amountOfMiddleMonth += effectiveDays * budget.getDailyAmount();
                 }
             }
