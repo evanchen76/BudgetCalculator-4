@@ -1,5 +1,3 @@
-
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,30 +28,13 @@ public class BudgetCaculator {
 
         } else {
 
-            LocalDate loopStartDate = LocalDate.of(period.start.getYear(), period.start.getMonth(), 1);
-            LocalDate loopEndDate = LocalDate.of(period.end.getYear(), period.end.getMonth(), 1);
-
             double amountOfMiddleMonth = 0;
-            for (LocalDate date = loopStartDate; date.compareTo(loopEndDate) <= 0; date = date.plusMonths(1)) {
+            for (LocalDate date = LocalDate.of(period.start.getYear(), period.start.getMonth(), 1); date.compareTo(period.end) <= 0; date = date.plusMonths(1)) {
                 String month = date.getYear() + String.format("%02d", date.getMonthValue());
                 Budget budget = getBudget(month);
 
-                LocalDate effectiveStart = period.start;
-                LocalDate effectiveEnd = period.end;
                 if (budget != null) {
-
-                    if (date.compareTo(loopStartDate) == 0) {
-                        effectiveStart = period.start;
-                        effectiveEnd = budget.lastDate();
-                    } else if (date.compareTo(loopEndDate) == 0) {
-                        effectiveStart = budget.firstDate();
-                        effectiveEnd = period.end;
-                    } else {
-                        effectiveStart = budget.firstDate();
-                        effectiveEnd = budget.lastDate();
-                    }
-
-                    long effectiveDays = days(effectiveStart, effectiveEnd);
+                    long effectiveDays = period.getEffectiveDays(date, budget);
                     amountOfMiddleMonth += effectiveDays * budget.getDailyAmount();
                 }
             }
@@ -63,6 +44,10 @@ public class BudgetCaculator {
 
         return totalAmount;
 
+    }
+
+    private boolean isStartMonth(LocalDate date, LocalDate start) {
+        return date.compareTo(LocalDate.of(start.getYear(), start.getMonth(), 1)) == 0;
     }
 
     private double amountOfSingleMonth(Period period) {
@@ -158,14 +143,4 @@ public class BudgetCaculator {
         return start_day.compareTo(end_day) != 0;
     }
 
-    private class Period {
-        LocalDate start;
-        LocalDate end;
-
-        private Period(LocalDate start, LocalDate end) {
-            this.start = start;
-            this.end = end;
-        }
-
-    }
 }
