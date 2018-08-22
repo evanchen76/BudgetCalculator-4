@@ -34,7 +34,7 @@ public class BudgetCaculator {
                 Budget budget = getBudget(month);
 
                 if (budget != null) {
-                    long effectiveDays = period.getEffectiveDays(date, budget);
+                    long effectiveDays = period.getEffectiveDays(budget);
                     amountOfMiddleMonth += effectiveDays * budget.getDailyAmount();
                 }
             }

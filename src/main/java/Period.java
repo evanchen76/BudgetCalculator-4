@@ -10,17 +10,13 @@ class Period {
         this.end = end;
     }
 
-    long getEffectiveDays(LocalDate date, Budget budget) {
+    long getEffectiveDays( Budget budget) {
         LocalDate effectiveStart = start;
+        if (budget.firstDate().compareTo(this.start) > 0) {
+            effectiveStart = budget.firstDate();
+        }
         LocalDate effectiveEnd = end;
-        if (date.compareTo(LocalDate.of(start.getYear(), start.getMonth(), 1)) == 0) {
-            effectiveStart = start;
-            effectiveEnd = budget.lastDate();
-        } else if (date.compareTo(LocalDate.of(end.getYear(), end.getMonth(), 1)) == 0) {
-            effectiveStart = budget.firstDate();
-            effectiveEnd = end;
-        } else {
-            effectiveStart = budget.firstDate();
+        if (budget.lastDate().compareTo(this.end) < 0) {
             effectiveEnd = budget.lastDate();
         }
 
