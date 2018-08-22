@@ -6,14 +6,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BudgetCaculatorTest {
+public class BudgetCalculatorTest {
 
-    private BudgetCaculator budgetCaculator;
+    private BudgetCalculator budgetCalculator;
 
     @Before
     public void setup() {
         IBudgetRepo budgetRepo = givenBudgetRepo();
-        budgetCaculator = new BudgetCaculator(budgetRepo);
+        budgetCalculator = new BudgetCalculator(budgetRepo);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class BudgetCaculatorTest {
     private void totalAmountShouldBe(String start_day, String end_day, double v) {
         LocalDate start = LocalDate.of(Integer.parseInt(start_day.substring(0, 4)), Integer.parseInt(start_day.substring(4, 6)), Integer.parseInt(start_day.substring(6)));
         LocalDate end = LocalDate.of(Integer.parseInt(end_day.substring(0, 4)), Integer.parseInt(end_day.substring(4, 6)), Integer.parseInt(end_day.substring(6)));
-        double budget = budgetCaculator.totalAmount(start, end);
+        double budget = budgetCalculator.totalAmount(start, end);
         Assert.assertEquals(v, budget, 0.001);
     }
 

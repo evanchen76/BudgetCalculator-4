@@ -1,11 +1,9 @@
 import java.time.LocalDate;
-import java.util.List;
 
-
-class BudgetCaculator {
+class BudgetCalculator {
     private IBudgetRepo budgetRepo;
 
-    BudgetCaculator(IBudgetRepo budgetRepo) {
+    BudgetCalculator(IBudgetRepo budgetRepo) {
 
         this.budgetRepo = budgetRepo;
     }
