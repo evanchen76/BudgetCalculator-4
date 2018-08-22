@@ -1,10 +1,10 @@
 import java.time.LocalDate;
 
-public class Budget {
+class Budget {
     String yearMonth;
     double budgetAmount;
 
-    Double getDailyAmount() {
+    private Double getDailyAmount() {
 
         LocalDate budgetDate = firstDate();
         int daysOfMonth = budgetDate.lengthOfMonth();
@@ -12,15 +12,15 @@ public class Budget {
         return budgetAmount / daysOfMonth;
     }
 
-    LocalDate firstDate() {
+    private LocalDate firstDate() {
         return LocalDate.of(Integer.parseInt(yearMonth.substring(0, 4)), Integer.parseInt(yearMonth.substring(4)), 1);
     }
 
-    LocalDate lastDate() {
+    private LocalDate lastDate() {
         return LocalDate.of(Integer.parseInt(yearMonth.substring(0, 4)), Integer.parseInt(yearMonth.substring(4)), firstDate().lengthOfMonth());
     }
 
-    Period createPeriod() {
+    private Period createPeriod() {
         return new Period(firstDate(), lastDate());
     }
 
