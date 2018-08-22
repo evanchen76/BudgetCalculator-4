@@ -29,14 +29,14 @@ public class BudgetCaculator {
         } else {
 
             double amountOfMiddleMonth = 0;
+
             for (LocalDate date = LocalDate.of(period.start.getYear(), period.start.getMonth(), 1); date.compareTo(period.end) <= 0; date = date.plusMonths(1)) {
                 String month = date.getYear() + String.format("%02d", date.getMonthValue());
                 Budget budget = getBudget(month);
 
                 if (budget != null) {
-                    long overlappingDays = period.overlappingDays(budget.createPeriod());
 
-                    amountOfMiddleMonth += overlappingDays * budget.getDailyAmount();
+                    amountOfMiddleMonth += budget.effectiveTotalAmount(period);
                 }
             }
             totalAmount += amountOfMiddleMonth;

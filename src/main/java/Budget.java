@@ -23,4 +23,8 @@ public class Budget {
     Period createPeriod() {
         return new Period(firstDate(), lastDate());
     }
+
+    double effectiveTotalAmount(Period period) {
+        return period.overlappingDays(createPeriod()) * getDailyAmount();
+    }
 }
